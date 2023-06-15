@@ -1,6 +1,5 @@
-const express = required("express");
-const accounts = require("./accounts");
-const res = require("express/lib/response");
+const express = require("express");
+let accounts = require("./accounts");
 const PORT = 8000;
 const app = express();
 app.use(express.json());
@@ -15,25 +14,37 @@ app.post("/accounts", (req, res) => {
     id: newID,
     ...req.body,
   };
-  accounts.push({ newAccount });
+  accounts.push(newAccount);
   return res.status(201).json({
     accounts: accounts,
   });
 });
 
 app.delete("/accounts/:id", (req, res) => {
-  const { accountID } = req.params;
-  accounts = accounts.filter((account) => account.id != accountID);
+  const { id } = req.params;
+  accounts = accounts.filter((account) => account.id != id);
   return res.status(200).json(accounts);
 });
 
-// app.put("/accounts/:id", (req, res) => {
-//   const {foundID} = req.params;
-//   foundID = accounts.find((account) => account.id == foundID);
-//   if (!foundID ) return res.status(404).json({message: "account not found"});
+app.put("/accounts/:id", (req, res) => {
+  const { id } = req.params;
+  const found = accounts.find((account) => account.id == id);
+  if (!found) return res.status(404).json({ message: "account not found" });
+  else {
+    found.username = req.body.username;
+    found.funds = req.body.funds;
+    return res.status(200).json(found);
+  }
+});
 
-//   return res.status(200).json(foundID);
-// });
+app.get("/accounts/:username", (req, res) => {
+  const { username } = req.params;
+  const user = accounts.find((account) => account.username === username);
+  if (!user) return res.status(404).json({ message: "username not found" });
+  else {
+    res.status(200).json(user);
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
